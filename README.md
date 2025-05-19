@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/yonaka15-mcp-pyodide-badge.png)](https://mseep.ai/app/yonaka15-mcp-pyodide)
+
 # mcp-pyodide
 
 A Pyodide server implementation for the Model Context Protocol (MCP). This server enables Large Language Models (LLMs) to execute Python code through the MCP interface.

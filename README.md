@@ -1,63 +1,62 @@
 [![MseeP.ai Security Assessment Badge](https://mseep.net/pr/yonaka15-mcp-pyodide-badge.png)](https://mseep.ai/app/yonaka15-mcp-pyodide)
 
+[中文](README.md) | [English](README.en.md) | [日本語](README.ja.md)
+
 # mcp-pyodide
 
-A Pyodide server implementation for the Model Context Protocol (MCP). This server enables Large Language Models (LLMs) to execute Python code through the MCP interface.
+这是一个基于 Pyodide 的 Model Context Protocol (MCP) 服务器实现。该服务器使大语言模型（LLM）可以通过 MCP 接口执行 Python 代码。
 
 <a href="https://glama.ai/mcp/servers/pxls43joly">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/pxls43joly/badge" alt="mcp-pyodide MCP server" />
 </a>
 
-## Features
+## 特性
 
-- Python code execution capability for LLMs using Pyodide
-- MCP compliant server implementation
-- Support for both stdio and SSE transport modes
-- Robust implementation written in TypeScript
-- Available as a command-line tool
+- 基于 Pyodide 的 Python 代码执行能力
+- 符合 MCP 规范的服务器实现
+- 支持 stdio、SSE 和 Streamable HTTP 三种传输模式
+- 使用 TypeScript 编写
+- 可作为命令行工具使用
 
-## Installation
-
-```bash
-npm install mcp-pyodide
-```
-
-## Usage
-
-### As a Server
-
-```typescript
-import { runServer } from "mcp-pyodide";
-
-// Start the server
-runServer().catch((error: unknown) => {
-  console.error("Error starting server:", error);
-  process.exit(1);
-});
-```
-
-### As a Command-line Tool
-
-Start in stdio mode (default):
+## 安装
 
 ```bash
-mcp-pyodide
+git clone <repository-url>
+cd mcp-pyodide
+npm i
+npm run build
 ```
 
-Start in SSE mode:
+## 使用
+
+本项目目前**未发布到 npm 仓库**，请通过本地构建的方式运行。
+
+以 stdio 模式启动（默认）：
 
 ```bash
-mcp-pyodide --sse
+node build/index.js
 ```
 
-### SSE Mode
+以 SSE 模式启动：
 
-When running in SSE mode, the server provides the following endpoints:
+```bash
+node build/index.js --sse
+```
 
-- SSE Connection: `http://localhost:3020/sse`
-- Message Handler: `http://localhost:3020/messages`
+以 Streamable HTTP 模式启动：
 
-Example client connection:
+```bash
+node build/index.js --streamable
+```
+
+### SSE 模式
+
+当以 SSE 模式运行时，服务器提供以下端点：
+
+- SSE 连接：`http://localhost:3020/sse`
+- 消息处理：`http://localhost:3020/messages`
+
+示例客户端连接：
 
 ```typescript
 const eventSource = new EventSource("http://localhost:3020/sse");
@@ -66,81 +65,94 @@ eventSource.onmessage = (event) => {
 };
 ```
 
-## Project Structure
+### Streamable HTTP 模式
+
+当以 Streamable HTTP 模式运行时，服务器提供以下端点：
+
+- MCP 端点：`http://localhost:3020/mcp`
+
+该端点支持：
+
+- `POST /mcp` 发送 MCP 请求（包含初始化请求）
+- `GET /mcp` 在初始化后建立通知流（SSE）
+- `DELETE /mcp` 终止会话
+
+## 项目结构
 
 ```
 mcp-pyodide/
 ├── src/
-│   ├── formatters/    # Data formatting handlers
-│   ├── handlers/      # Request handlers
-│   ├── lib/          # Library code
-│   ├── tools/        # Utility tools
-│   ├── utils/        # Utility functions
-│   └── index.ts      # Main entry point
-├── build/            # Build artifacts
-├── pyodide-packages/ # Pyodide-related packages
+│   ├── formatters/    # 数据格式化
+│   ├── handlers/      # 请求处理
+│   ├── lib/          # 核心库代码
+│   ├── tools/        # 工具实现
+│   ├── utils/        # 工具函数
+│   └── index.ts      # 主入口
+├── build/            # 构建产物
+├── pyodide-packages/ # Pyodide 相关包
 └── package.json
 ```
 
-## Dependencies
+## 依赖
 
-- `@modelcontextprotocol/sdk`: MCP SDK (^1.4.0)
-- `pyodide`: Python runtime environment (^0.27.1)
-- `arktype`: Type validation library (^2.0.1)
-- `express`: Web framework for SSE support
-- `cors`: CORS middleware for SSE support
+- `@modelcontextprotocol/sdk`: MCP SDK (^1.25.1)
+- `pyodide`: Python 运行时环境 (^0.29.0)
+- `arktype`: 类型校验库 (^2.0.1)
+- `express`: Web 框架（用于 SSE / Streamable HTTP）
+- `cors`: CORS 中间件
 
-## Development
+## 开发
 
-### Requirements
+### 环境要求
 
-- Node.js 18 or higher
-- npm 9 or higher
+- Node.js 18 或更高版本
+- npm 9 或更高版本
 
-### Setup
+### 初始化
 
 ```bash
-# Clone the repository
+# 克隆仓库
 git clone <repository-url>
 
-# Install dependencies
+# 安装依赖
 npm install
 
-# Build
+# 构建
 npm run build
 ```
 
 ### Scripts
 
-- `npm run build`: Compile TypeScript and set execution permissions
-- `npm start`: Run server in stdio mode
-- `npm run start:sse`: Run server in SSE mode
+- `npm run build`: 编译 TypeScript 并设置可执行权限
+- `npm start`: 以 stdio 模式运行
+- `npm run start:sse`: 以 SSE 模式运行
 
-## Environment Variables
+## 环境变量
 
-- `PYODIDE_CACHE_DIR`: Directory for Pyodide cache (default: "./cache")
-- `PYODIDE_DATA_DIR`: Directory for mounted data (default: "./data")
-- `PORT`: Port for SSE server (default: 3020)
+- `PYODIDE_CACHE_DIR`: Pyodide 缓存目录（默认："./cache"）
+- `PYODIDE_DATA_DIR`: 挂载的数据目录（默认："./data"）
+- `MCP_PORT`: HTTP 服务端口（SSE / Streamable HTTP）（默认：3020）
+- `PORT`: `MCP_PORT` 的别名（默认：3020）
 
-## License
+## 许可证
 
 MIT
 
-## Contributing
+## 贡献
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -am 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Create a Pull Request
+1. Fork 本仓库
+2. 创建功能分支（`git checkout -b feature/amazing-feature`）
+3. 提交变更（`git commit -am 'Add some amazing feature'`）
+4. 推送到远端分支（`git push origin feature/amazing-feature`）
+5. 创建 Pull Request
 
-## Important Notes
+## 注意事项
 
-- This project is under development, and the API may change
-- Thoroughly test before using in production
-- Exercise caution when executing untrusted code for security reasons
-- When using SSE mode, ensure proper CORS configuration if needed
+- 本项目仍在开发中，API 可能会变化
+- 在生产环境使用前请充分测试
+- 出于安全原因，请谨慎执行不可信代码
+- 使用 SSE 模式时，如有需要请确保正确配置 CORS
 
-## Support
+## 支持
 
-Please use the Issue tracker for problems and questions.
+如有问题或疑问，请使用 Issue tracker。

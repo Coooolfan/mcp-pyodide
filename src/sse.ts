@@ -89,7 +89,7 @@ export async function runSSEServer(server: Server) {
     });
   });
 
-  const port = 3020;
+  const port = Number(process.env.MCP_PORT || process.env.PORT || 3020);
   app.listen(port, () => {
     console.error(
       `pyodide MCP Server running on SSE at http://localhost:${port}`

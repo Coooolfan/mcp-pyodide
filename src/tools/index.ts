@@ -3,7 +3,7 @@ import { Tool } from "@modelcontextprotocol/sdk/types.js";
 export const EXECUTE_PYTHON_TOOL: Tool = {
   name: "pyodide_execute",
   description:
-    "Execute Python code using Pyodide with output capture. When generating images, they will be automatically saved to the output directory instead of being displayed. Images can be accessed from the saved file paths that will be included in the output.",
+    "Execute Python code using Pyodide with output capture. When generating images, they will be automatically saved to the output directory instead of being displayed. Images can be accessed from the saved file paths that will be included in the output.\n\nNetworking notes (Pyodide):\n- `import pyodide` does not auto-import submodules; use `from pyodide.http import pyfetch` (or `import pyodide.http`) before calling HTTP helpers.\n- Prefer running async code in an async context: top-level `await` works when executed via `runPythonAsync` (e.g., `response = await pyfetch(url)`).\n- Avoid `asyncio.run(...)` / `loop.run_until_complete(...)` in this environment; it may fail with `WebAssembly stack switching not supported in this JavaScript runtime`. Use `await your_async_func()` instead.",
   inputSchema: {
     type: "object",
     properties: {

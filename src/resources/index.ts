@@ -1,4 +1,7 @@
-import { Resource, ResourceContents } from "@modelcontextprotocol/sdk/types.js";
+import {
+  BlobResourceContents,
+  Resource,
+} from "@modelcontextprotocol/sdk/types.js";
 import { PyodideManager } from "../lib/pyodide/pyodide-manager.js";
 import * as path from "path";
 
@@ -16,7 +19,7 @@ export class ResourceClient {
     });
   }
 
-  async readResource(uri: string): Promise<Resource> {
+  async readResource(uri: string): Promise<BlobResourceContents> {
     const mountPointInfo = this.pyodideManager.getMountPointInfo(uri);
 
     if (!mountPointInfo) {
@@ -35,12 +38,8 @@ export class ResourceClient {
       throw new Error(result.error);
     }
 
-    // Get filename for the resource name
-    const name = path.basename(relativePath);
-
     return {
       uri,
-      name,
       blob: result.blob,
       mimeType: result.mimeType,
     };

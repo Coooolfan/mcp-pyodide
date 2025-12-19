@@ -141,6 +141,45 @@ class PyodideManager {
   async initialize(packageCacheDir: string): Promise<boolean> {
     try {
       console.error("Initializing Pyodide...");
+
+      const jsglobals: any = Object.create(globalThis);
+      if (!("ImageData" in jsglobals)) jsglobals.ImageData = {};
+      if (!("document" in jsglobals)) {
+        jsglobals.document = {
+          getElementById: (id: any) => {
+            if (id.includes("canvas")) return null;
+            else
+              return {
+                addEventListener: () => {},
+                style: {},
+                classList: { add: () => {}, remove: () => {} },
+                setAttribute: () => {},
+                appendChild: () => {},
+                remove: () => {},
+              };
+          },
+          createElement: () => ({
+            addEventListener: () => {},
+            style: {},
+            classList: { add: () => {}, remove: () => {} },
+            setAttribute: () => {},
+            appendChild: () => {},
+            remove: () => {},
+          }),
+          createTextNode: () => ({
+            addEventListener: () => {},
+            style: {},
+            classList: { add: () => {}, remove: () => {} },
+            setAttribute: () => {},
+            appendChild: () => {},
+            remove: () => {},
+          }),
+          body: {
+            appendChild: () => {},
+          },
+        };
+      }
+
       this.pyodide = await loadPyodide({
         packageCacheDir,
         stdout: (text: string) => {
@@ -149,46 +188,7 @@ class PyodideManager {
         stderr: (text: string) => {
           //console.error("[Python stderr]:", text);
         },
-        jsglobals: {
-          clearInterval,
-          clearTimeout,
-          setInterval,
-          setTimeout,
-          ImageData: {},
-          document: {
-            getElementById: (id: any) => {
-              if (id.includes("canvas")) return null;
-              else
-                return {
-                  addEventListener: () => {},
-                  style: {},
-                  classList: { add: () => {}, remove: () => {} },
-                  setAttribute: () => {},
-                  appendChild: () => {},
-                  remove: () => {},
-                };
-            },
-            createElement: () => ({
-              addEventListener: () => {},
-              style: {},
-              classList: { add: () => {}, remove: () => {} },
-              setAttribute: () => {},
-              appendChild: () => {},
-              remove: () => {},
-            }),
-            createTextNode: () => ({
-              addEventListener: () => {},
-              style: {},
-              classList: { add: () => {}, remove: () => {} },
-              setAttribute: () => {},
-              appendChild: () => {},
-              remove: () => {},
-            }),
-            body: {
-              appendChild: () => {},
-            },
-          },
-        },
+        jsglobals,
       });
       console.error("Pyodide initialized successfully");
       return true;

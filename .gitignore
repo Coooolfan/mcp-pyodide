@@ -67,3 +67,7 @@ cache/
 
 # mcp-pyodide specific
 .temp_wheels/
+
+# typescript-sdk specific
+typescript-sdk
+

@@ -46,34 +46,34 @@ export const GET_MOUNT_POINTS_TOOL: Tool = {
   },
 };
 
-export const LIST_MOUNTED_DIRECTORY_TOOL: Tool = {
-  name: "pyodide_list-mounted-directory",
-  description: "List contents of a mounted directory",
-  inputSchema: {
-    type: "object",
-    properties: {
-      mountName: {
-        type: "string",
-        description: "Name of the mount point",
-      },
-    },
-    required: ["mountName"],
-  },
-};
+// export const LIST_MOUNTED_DIRECTORY_TOOL: Tool = {
+//   name: "pyodide_list-mounted-directory",
+//   description: "List contents of a mounted directory",
+//   inputSchema: {
+//     type: "object",
+//     properties: {
+//       mountName: {
+//         type: "string",
+//         description: "Name of the mount point",
+//       },
+//     },
+//     required: ["mountName"],
+//   },
+// };
 
-export const READ_IMAGE_TOOL: Tool = {
-  name: "pyodide_read-image",
-  description: "Read an image from a mounted directory",
+export const READ_MEDIA_TOOL: Tool = {
+  name: "pyodide_read-media",
+  description: "Read an image or audio from a mounted directory",
   inputSchema: {
     type: "object",
     properties: {
       mountName: {
         type: "string",
-        description: "Name of the mount point",
+        description: "Name of the mount point, fetch from pyodide_get-mount-points, e.g., 'mnt'",
       },
       imagePath: {
         type: "string",
-        description: "Path of the image file",
+        description: "Path of the image file, relative to the mount point, e.g., 'image.png'",
       },
     },
     required: ["mountName", "imagePath"],

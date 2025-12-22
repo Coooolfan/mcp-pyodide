@@ -108,6 +108,15 @@ mcp-pyodide/
 - Node.js 18 或更高版本
 - npm 9 或更高版本
 
+### 代码风格
+
+本项目使用 [Prettier](https://prettier.io/) 进行统一格式化：
+
+```bash
+npm run format        # 自动修复格式
+npm run format:check  # 仅检查不修改
+```
+
 ### 初始化
 
 ```bash

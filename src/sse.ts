@@ -24,7 +24,7 @@ export async function runSSEServer(server: Server) {
       origin: "*",
       methods: ["GET", "POST"],
       allowedHeaders: ["Content-Type"],
-    })
+    }),
   );
 
   // Used to allow parsing of the body of the request
@@ -91,8 +91,6 @@ export async function runSSEServer(server: Server) {
 
   const port = Number(process.env.MCP_PORT || process.env.PORT || 3020);
   app.listen(port, () => {
-    console.error(
-      `pyodide MCP Server running on SSE at http://localhost:${port}`
-    );
+    console.error(`pyodide MCP Server running on SSE at http://localhost:${port}`);
   });
 }

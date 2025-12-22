@@ -44,18 +44,14 @@ async function downloadWheel(url: string, destPath: string): Promise<string> {
         if (response.headers.location) {
           file.close();
           fs.unlinkSync(destPath); // 作成した空ファイルを削除
-          downloadWheel(response.headers.location, destPath)
-            .then(resolve)
-            .catch(reject);
+          downloadWheel(response.headers.location, destPath).then(resolve).catch(reject);
           return;
         }
       }
 
       // エラーステータスの処理
       if (response.statusCode !== 200) {
-        reject(
-          new Error(`Failed to download: Status code ${response.statusCode}`)
-        );
+        reject(new Error(`Failed to download: Status code ${response.statusCode}`));
         return;
       }
 
@@ -87,9 +83,7 @@ async function getWheelUrl(packageName: string): Promise<string> {
     https
       .get(url, (response) => {
         if (response.statusCode !== 200) {
-          reject(
-            new Error(`Failed to get package info: ${response.statusCode}`)
-          );
+          reject(new Error(`Failed to get package info: ${response.statusCode}`));
           return;
         }
 
@@ -107,7 +101,7 @@ async function getWheelUrl(packageName: string): Promise<string> {
             const wheel = releases.find(
               (release: any) =>
                 release.packagetype === "bdist_wheel" &&
-                release.filename.includes("py3-none-any.whl")
+                release.filename.includes("py3-none-any.whl"),
             );
 
             if (wheel) {
@@ -222,7 +216,7 @@ class PyodideManager {
         {
           root: absolutePath,
         },
-        mountPoint
+        mountPoint,
       );
 
       this.mountPoints.set(name, {
@@ -244,13 +238,11 @@ class PyodideManager {
     }
 
     try {
-      const mountPoints = Array.from(this.mountPoints.entries()).map(
-        ([name, config]) => ({
-          name,
-          hostPath: config.hostPath,
-          mountPoint: config.mountPoint,
-        })
-      );
+      const mountPoints = Array.from(this.mountPoints.entries()).map(([name, config]) => ({
+        name,
+        // hostPath: config.hostPath,
+        mountPoint: config.mountPoint,
+      }));
       return formatCallToolSuccess(JSON.stringify(mountPoints, null, 2));
     } catch (error) {
       return formatCallToolError(error);
@@ -343,9 +335,7 @@ list_directory("${mountConfig.mountPoint}")
       // Check if path starts with this mount point
       if (filePath.startsWith(mountPoint)) {
         // Get relative path by removing mount point prefix
-        const relativePath = filePath
-          .slice(mountPoint.length)
-          .replace(/^[/\\]+/, ""); // Remove leading slashes
+        const relativePath = filePath.slice(mountPoint.length).replace(/^[/\\]+/, ""); // Remove leading slashes
 
         return {
           mountName,
@@ -370,7 +360,7 @@ list_directory("${mountConfig.mountPoint}")
           const executionResult = await Promise.race([
             this.pyodide!.runPythonAsync(code),
             new Promise((_, reject) =>
-              setTimeout(() => reject(new Error("Execution timeout")), timeout)
+              setTimeout(() => reject(new Error("Execution timeout")), timeout),
             ),
           ]);
 
@@ -380,13 +370,11 @@ list_directory("${mountConfig.mountPoint}")
 
           return executionResult;
         },
-        { suppressConsole: true }
+        { suppressConsole: true },
       );
 
       return formatCallToolSuccess(
-        output
-          ? `Output:\n${output}\nResult:\n${String(result)}`
-          : String(result)
+        output ? `Output:\n${output}\nResult:\n${String(result)}` : String(result),
       );
     } catch (error) {
       return formatCallToolError(error);
@@ -435,7 +423,7 @@ list_directory("${mountConfig.mountPoint}")
                 loadPackageError instanceof Error
                   ? loadPackageError.message
                   : String(loadPackageError)
-              }`
+              }`,
             );
             outputs.push(`Falling back to micropip for ${pkg}...`);
 
@@ -457,7 +445,7 @@ list_directory("${mountConfig.mountPoint}")
                   micropipLoadError instanceof Error
                     ? micropipLoadError.message
                     : String(micropipLoadError)
-                }`
+                }`,
               );
             }
 
@@ -494,19 +482,15 @@ list_directory("${mountConfig.mountPoint}")
                   await micropip.install("emfs:${pyodideWheelPath}")
                 `);
               },
-              { suppressConsole: true }
+              { suppressConsole: true },
             );
 
-            outputs.push(
-              `Successfully installed ${pkg} using micropip: ${output}`
-            );
+            outputs.push(`Successfully installed ${pkg} using micropip: ${output}`);
           }
         } catch (error) {
           // 個別のパッケージのエラーを記録して続行
           outputs.push(
-            `Failed to install ${pkg}: ${
-              error instanceof Error ? error.message : String(error)
-            }`
+            `Failed to install ${pkg}: ${error instanceof Error ? error.message : String(error)}`,
           );
         }
       }
@@ -519,7 +503,7 @@ list_directory("${mountConfig.mountPoint}")
 
   async readResource(
     mountName: string,
-    resourcePath: string
+    resourcePath: string,
   ): Promise<
     | {
         blob: string;
@@ -632,10 +616,7 @@ list_directory("${mountConfig.mountPoint}")
       if ("error" in resource) {
         return formatCallToolError(resource.error);
       }
-      const content = contentFormatters.formatImage(
-        resource.blob,
-        resource.mimeType
-      );
+      const content = contentFormatters.formatImage(resource.blob, resource.mimeType);
       return formatCallToolSuccess(content);
     } catch (error) {
       return formatCallToolError(error);

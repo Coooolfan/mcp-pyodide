@@ -32,7 +32,7 @@ export async function runStreamableServer(createServer: () => Server) {
       methods: ["GET", "POST", "DELETE"],
       allowedHeaders: ["Content-Type", "mcp-session-id", "last-event-id"],
       exposedHeaders: ["mcp-session-id"],
-    })
+    }),
   );
 
   app.use(bodyParser.json());
@@ -153,8 +153,6 @@ export async function runStreamableServer(createServer: () => Server) {
 
   const port = Number(process.env.MCP_PORT || 3020);
   app.listen(port, () => {
-    console.error(
-      `pyodide MCP Server running on Streamable HTTP at http://localhost:${port}/mcp`
-    );
+    console.error(`pyodide MCP Server running on Streamable HTTP at http://localhost:${port}/mcp`);
   });
 }

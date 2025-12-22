@@ -56,11 +56,7 @@ function formatImage(data: string, mimeType: string): ContentItem {
  * @param mimeType Optional MIME type
  * @returns Formatted content item
  */
-function formatResource(
-  uri: string,
-  text: string,
-  mimeType?: string
-): ContentItem {
+function formatResource(uri: string, text: string, mimeType?: string): ContentItem {
   return {
     type: "resource",
     resource: {
@@ -76,14 +72,12 @@ function formatResource(
  * @param content Single content item or array of content items
  * @returns Formatted tool response
  */
-export function formatSuccess(
-  content: ContentItem | ContentItem[] | string
-): CallToolResult {
+export function formatSuccess(content: ContentItem | ContentItem[] | string): CallToolResult {
   const contentArray = Array.isArray(content)
     ? content
     : typeof content === "string"
-    ? [formatText(content)]
-    : [content];
+      ? [formatText(content)]
+      : [content];
 
   return {
     content: contentArray,
@@ -98,11 +92,7 @@ export function formatSuccess(
  */
 export function formatError(error: unknown): CallToolResult {
   return {
-    content: [
-      formatText(
-        `Error: ${error instanceof Error ? error.message : String(error)}`
-      ),
-    ],
+    content: [formatText(`Error: ${error instanceof Error ? error.message : String(error)}`)],
     isError: true,
   };
 }

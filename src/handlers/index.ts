@@ -1,8 +1,8 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
   CallToolRequestSchema,
-  ListToolsRequestSchema,
   ListResourcesRequestSchema,
+  ListToolsRequestSchema,
   ReadResourceRequestSchema,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
@@ -20,8 +20,8 @@ const TOOLS: Tool[] = [
   tools.EXECUTE_PYTHON_TOOL,
   tools.INSTALL_PYTHON_PACKAGES_TOOL,
   tools.GET_MOUNT_POINTS_TOOL,
-  tools.LIST_MOUNTED_DIRECTORY_TOOL,
-  tools.READ_IMAGE_TOOL,
+  // tools.LIST_MOUNTED_DIRECTORY_TOOL,
+  tools.READ_MEDIA_TOOL,
 ];
 
 const isExecutePythonArgs = type({
@@ -94,23 +94,22 @@ function setupServerHandlers(server: Server) {
           const results = await pyodideManager.getMountPoints();
           return results;
         }
-        case "pyodide_list-mounted-directory": {
-          const listMountedDirectoryArgs = isListMountedDirectoryArgs(args);
-          if (listMountedDirectoryArgs instanceof type.errors) {
-            throw listMountedDirectoryArgs;
-          }
-          const { mountName } = listMountedDirectoryArgs;
-          const results = await pyodideManager.listMountedDirectory(mountName);
-          return results;
-        }
-        case "pyodide_read-image": {
+        // case "pyodide_list-mounted-directory": {
+        //   const listMountedDirectoryArgs = isListMountedDirectoryArgs(args);
+        //   if (listMountedDirectoryArgs instanceof type.errors) {
+        //     throw listMountedDirectoryArgs;
+        //   }
+        //   const { mountName } = listMountedDirectoryArgs;
+        //   const results = await pyodideManager.listMountedDirectory(mountName);
+        //   return results;
+        // }
+        case "pyodide_read-media": {
           const readImageArgs = isReadImageArgs(args);
           if (readImageArgs instanceof type.errors) {
             throw readImageArgs;
           }
           const { mountName, imagePath } = readImageArgs;
-          const results = await pyodideManager.readImage(mountName, imagePath);
-          return results;
+          return await pyodideManager.readImage(mountName, imagePath);
         }
         default: {
           return formatCallToolError(`Unknown tool: ${name}`);
@@ -133,7 +132,7 @@ function createServer(): Server {
         tools: {},
         resources: {},
       },
-    }
+    },
   );
 
   setupServerHandlers(server);

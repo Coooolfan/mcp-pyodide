@@ -1,7 +1,4 @@
-import {
-  BlobResourceContents,
-  Resource,
-} from "@modelcontextprotocol/sdk/types.js";
+import { BlobResourceContents, Resource } from "@modelcontextprotocol/sdk/types.js";
 import { PyodideManager } from "../lib/pyodide/pyodide-manager.js";
 import * as path from "path";
 
@@ -28,10 +25,7 @@ export class ResourceClient {
 
     // Get each value from pathInfo
     const { mountName, relativePath } = mountPointInfo;
-    const result = await this.pyodideManager.readResource(
-      mountName,
-      relativePath
-    );
+    const result = await this.pyodideManager.readResource(mountName, relativePath);
 
     // Check for error
     if ("error" in result) {

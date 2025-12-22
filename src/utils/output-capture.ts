@@ -34,7 +34,7 @@ const withOutputCapture = async <T>(
   operation: (capture: OutputCapture) => Promise<T>,
   options: {
     suppressConsole?: boolean; // Suppress console output
-  } = {}
+  } = {},
 ): Promise<{ result: T; output: string }> => {
   const outputCapture = new OutputCapture();
   outputCapture.setupOutput(pyodide);

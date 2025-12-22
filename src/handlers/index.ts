@@ -22,6 +22,7 @@ const TOOLS: Tool[] = [
   tools.GET_MOUNT_POINTS_TOOL,
   // tools.LIST_MOUNTED_DIRECTORY_TOOL,
   tools.READ_MEDIA_TOOL,
+  tools.UPLOAD_FILE_OSS_TOOL
 ];
 
 const isExecutePythonArgs = type({
@@ -37,7 +38,12 @@ const isListMountedDirectoryArgs = type({
   mountName: "string",
 });
 
-const isReadImageArgs = type({
+const isReadMediaArgs = type({
+  mountName: "string",
+  imagePath: "string",
+});
+
+const isUploadFileOssArgs = type({
   mountName: "string",
   imagePath: "string",
 });
@@ -94,22 +100,21 @@ function setupServerHandlers(server: Server) {
           const results = await pyodideManager.getMountPoints();
           return results;
         }
-        // case "pyodide_list-mounted-directory": {
-        //   const listMountedDirectoryArgs = isListMountedDirectoryArgs(args);
-        //   if (listMountedDirectoryArgs instanceof type.errors) {
-        //     throw listMountedDirectoryArgs;
-        //   }
-        //   const { mountName } = listMountedDirectoryArgs;
-        //   const results = await pyodideManager.listMountedDirectory(mountName);
-        //   return results;
-        // }
         case "pyodide_read-media": {
-          const readImageArgs = isReadImageArgs(args);
+          const readImageArgs = isReadMediaArgs(args);
           if (readImageArgs instanceof type.errors) {
             throw readImageArgs;
           }
           const { mountName, imagePath } = readImageArgs;
           return await pyodideManager.readImage(mountName, imagePath);
+        }
+        case "pyodide_upload-file-oss":{
+          const uploadFileOssArgs = isUploadFileOssArgs(args)
+          if(uploadFileOssArgs instanceof type.errors){
+            throw uploadFileOssArgs
+          }
+          const {mountName, imagePath} = uploadFileOssArgs
+          return await pyodideManager.uploadFileOss(mountName, imagePath)
         }
         default: {
           return formatCallToolError(`Unknown tool: ${name}`);

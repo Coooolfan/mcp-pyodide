@@ -622,6 +622,115 @@ list_directory("${mountConfig.mountPoint}")
       return formatCallToolError(error);
     }
   }
+
+  /**
+   * Upload a file to Alibaba Cloud OSS
+   * Required environment variables:
+   * - OSS_ACCESS_KEY_ID: Access Key ID
+   * - OSS_ACCESS_KEY_SECRET: Access Key Secret
+   * - OSS_BUCKET: Bucket name
+   * - OSS_REGION: Region (e.g., oss-cn-hangzhou)
+   * Optional:
+   * - OSS_ENDPOINT: Custom endpoint (defaults to https://{region}.aliyuncs.com)
+   *
+   * @param mountName Mount point name
+   * @param filePath Relative path to file within mount point
+   * @param ossKey Optional OSS object key (defaults to filename)
+   * @returns Upload result with URL or error
+   */
+  async uploadFileOss(mountName: string, filePath: string, ossKey?: string) {
+    if (!this.pyodide) {
+      return formatCallToolError("Pyodide not initialized");
+    }
+
+    const mountConfig = this.mountPoints.get(mountName);
+    if (!mountConfig) {
+      return formatCallToolError(`Mount point not found: ${mountName}`);
+    }
+
+    // Read OSS configuration from environment variables
+    const accessKeyId = process.env.OSS_ACCESS_KEY_ID;
+    const accessKeySecret = process.env.OSS_ACCESS_KEY_SECRET;
+    const bucket = process.env.OSS_BUCKET;
+    const region = process.env.OSS_REGION;
+    const endpoint = process.env.OSS_ENDPOINT;
+
+    // Validate required environment variables
+    const missingVars: string[] = [];
+    if (!accessKeyId) missingVars.push("OSS_ACCESS_KEY_ID");
+    if (!accessKeySecret) missingVars.push("OSS_ACCESS_KEY_SECRET");
+    if (!bucket) missingVars.push("OSS_BUCKET");
+    if (!region && !endpoint) missingVars.push("OSS_REGION or OSS_ENDPOINT");
+
+    if (missingVars.length > 0) {
+      return formatCallToolError(
+        `Missing required environment variables: ${missingVars.join(", ")}`,
+      );
+    }
+
+    try {
+      // Dynamically import ali-oss
+      const OSS = (await import("ali-oss")).default;
+
+      // Build OSS client configuration
+      const ossConfig: any = {
+        accessKeyId: accessKeyId!,
+        accessKeySecret: accessKeySecret!,
+        bucket: bucket!,
+      };
+
+      if (endpoint) {
+        ossConfig.endpoint = endpoint;
+      } else {
+        ossConfig.region = region!;
+      }
+
+      const client = new OSS(ossConfig);
+
+      // Get full path to the file
+      const fullPath = path.join(mountConfig.hostPath, filePath);
+      if (!fs.existsSync(fullPath)) {
+        return formatCallToolError(`File not found: ${fullPath}`);
+      }
+
+      // Determine OSS object key within temp/ directory
+      const baseObjectKey = ossKey ?? path.basename(filePath);
+      const normalizedObjectKey = baseObjectKey.replace(/^\/+/, "");
+      const objectKey = path.posix.join("temp", normalizedObjectKey);
+
+      // Upload file
+      const result = await client.put(objectKey, fullPath);
+
+      const headers = (result.res?.headers ?? {}) as Record<string, any>;
+      const etag = headers.etag ?? headers.ETag ?? headers.ETAG;
+
+      // Generate pre-signed URL for private bucket access (1 hour expiry)
+      const expiresSeconds = 3600;
+      const signedUrl = client.signatureUrl(objectKey, { expires: expiresSeconds });
+
+      return formatCallToolSuccess(
+        JSON.stringify(
+          {
+            success: true,
+            url: result.url,
+            name: result.name,
+            signedUrl,
+            expiresIn: expiresSeconds,
+            etag,
+          },
+          null,
+          2,
+        ),
+      );
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("Cannot find package")) {
+        return formatCallToolError(
+          "ali-oss package not installed. Please run: npm install ali-oss",
+        );
+      }
+      return formatCallToolError(error);
+    }
+  }
 }
 
 export { PyodideManager };

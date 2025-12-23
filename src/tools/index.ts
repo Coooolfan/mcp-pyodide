@@ -46,6 +46,26 @@ export const GET_MOUNT_POINTS_TOOL: Tool = {
   },
 };
 
+export const UPLOAD_FILE_OSS_TOOL: Tool = {
+  name: "pyodide_upload-file-oss",
+  description:
+    "Upload a file to OSS, return a signed URL. user can use this signed URL to download the file directly. The file must be in the mounted directory.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      mountName: {
+        type: "string",
+        description: "Name of the mount point, fetch from pyodide_get-mount-points, e.g., 'mnt'",
+      },
+      imagePath: {
+        type: "string",
+        description: "Path of the image file, relative to the mount point, e.g., 'image.png'",
+      },
+    },
+    required: ["mountName", "imagePath"],
+  },
+};
+
 export const READ_MEDIA_TOOL: Tool = {
   name: "pyodide_read-media",
   description: "Read an image or audio from a mounted directory",

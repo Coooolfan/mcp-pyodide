@@ -26,9 +26,9 @@ interface ResourceInfo {
   mimeType: string; // MIME type
 }
 
-// Node.js環境でwheelファイルをダウンロードする
+// Download a wheel file within a Node.js environment
 async function downloadWheel(url: string, destPath: string): Promise<string> {
-  // ディレクトリがなければ作成
+  // Create the directory if it doesn't exist
   const dir = path.dirname(destPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -39,17 +39,17 @@ async function downloadWheel(url: string, destPath: string): Promise<string> {
     const file = fs.createWriteStream(destPath);
 
     const request = protocol.get(url, (response) => {
-      // リダイレクトの処理
+      // Handle redirects
       if (response.statusCode === 301 || response.statusCode === 302) {
         if (response.headers.location) {
           file.close();
-          fs.unlinkSync(destPath); // 作成した空ファイルを削除
+          fs.unlinkSync(destPath); // Remove the placeholder file we created
           downloadWheel(response.headers.location, destPath).then(resolve).catch(reject);
           return;
         }
       }
 
-      // エラーステータスの処理
+      // Handle non-success HTTP statuses
       if (response.statusCode !== 200) {
         reject(new Error(`Failed to download: Status code ${response.statusCode}`));
         return;
@@ -64,18 +64,18 @@ async function downloadWheel(url: string, destPath: string): Promise<string> {
     });
 
     request.on("error", (err) => {
-      fs.unlinkSync(destPath); // エラー時にファイルを削除
+      fs.unlinkSync(destPath); // Delete the file if an error occurs
       reject(err);
     });
 
     file.on("error", (err) => {
-      fs.unlinkSync(destPath); // エラー時にファイルを削除
+      fs.unlinkSync(destPath); // Delete the file if an error occurs
       reject(err);
     });
   });
 }
 
-// PyPIからwheelファイルのURLを取得する
+// Retrieve the wheel file URL from PyPI
 async function getWheelUrl(packageName: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const url = `https://pypi.org/pypi/${packageName}/json`;
@@ -97,7 +97,7 @@ async function getWheelUrl(packageName: string): Promise<string> {
             const packageInfo = JSON.parse(data);
             const releases = packageInfo.releases[packageInfo.info.version];
 
-            // py3-none-any.whl形式のWheelファイルを検索
+            // Find a wheel in py3-none-any.whl format
             const wheel = releases.find(
               (release: any) =>
                 release.packagetype === "bdist_wheel" &&
@@ -387,7 +387,7 @@ list_directory("${mountConfig.mountPoint}")
     }
 
     try {
-      // パッケージ名をスペースで分割
+      // Split the package names by whitespace
       const packages = packageName
         .split(" ")
         .map((pkg) => pkg.trim())
@@ -397,13 +397,13 @@ list_directory("${mountConfig.mountPoint}")
         return formatCallToolError("No valid package names specified");
       }
 
-      // 出力メッセージを集める
+      // Collect output messages
       const outputs: string[] = [];
 
-      // 各パッケージを処理
+      // Process each package
       for (const pkg of packages) {
         try {
-          // 1. まずpyodide.loadPackageでインストールを試みる
+          // Step 1: try installation via pyodide.loadPackage
           outputs.push(`Attempting to install ${pkg} using loadPackage...`);
 
           try {
@@ -416,7 +416,7 @@ list_directory("${mountConfig.mountPoint}")
               },
             });
             outputs.push(`Successfully installed ${pkg} using loadPackage.`);
-            continue; // このパッケージは成功したので次のパッケージへ
+            continue; // Package succeeded, so move on to the next one
           } catch (loadPackageError) {
             outputs.push(
               `loadPackage failed for ${pkg}: ${
@@ -427,10 +427,9 @@ list_directory("${mountConfig.mountPoint}")
             );
             outputs.push(`Falling back to micropip for ${pkg}...`);
 
-            // loadPackageが失敗した場合は、micropipを使用する
-            // micropipがまだロードされていない場合はロードする
+            // If loadPackage fails, install via micropip (loading micropip first if needed)
             try {
-              // micropipをロードする
+              // Load micropip
               await this.pyodide.loadPackage("micropip", {
                 messageCallback: (msg) => {
                   outputs.push(`loadPackage: ${msg}`);
@@ -449,31 +448,31 @@ list_directory("${mountConfig.mountPoint}")
               );
             }
 
-            // 2. micropipを使ったインストール処理
-            // 一時ディレクトリを作成
+            // Step 2: install via micropip
+            // Create a temporary directory
             const tempDir = process.env.PYODIDE_CACHE_DIR || "./cache";
             if (!fs.existsSync(tempDir)) {
               fs.mkdirSync(tempDir, { recursive: true });
             }
 
-            // Pyodide内のtempディレクトリを作成
+            // Create the temp directory inside Pyodide
             this.pyodide.FS.mkdirTree("/tmp/wheels");
 
-            // PyPIからwheelのURLを取得
+            // Fetch the wheel URL from PyPI
             const wheelUrl = await getWheelUrl(pkg);
             const wheelFilename = path.basename(wheelUrl);
             const localWheelPath = path.join(tempDir, wheelFilename);
 
-            // wheelをダウンロード
+            // Download the wheel locally
             outputs.push(`Downloading wheel for ${pkg}...`);
             await downloadWheel(wheelUrl, localWheelPath);
 
-            // wheelをPyodideのファイルシステムにコピー
+            // Copy the wheel into the Pyodide filesystem
             const wheelData = fs.readFileSync(localWheelPath);
             const pyodideWheelPath = `/tmp/wheels/${wheelFilename}`;
             this.pyodide.FS.writeFile(pyodideWheelPath, wheelData);
 
-            // micropipでインストール
+            // Install the wheel via micropip
             const { output } = await withOutputCapture(
               this.pyodide,
               async () => {
@@ -488,7 +487,7 @@ list_directory("${mountConfig.mountPoint}")
             outputs.push(`Successfully installed ${pkg} using micropip: ${output}`);
           }
         } catch (error) {
-          // 個別のパッケージのエラーを記録して続行
+          // Record the error for this package and continue
           outputs.push(
             `Failed to install ${pkg}: ${error instanceof Error ? error.message : String(error)}`,
           );
@@ -619,6 +618,113 @@ list_directory("${mountConfig.mountPoint}")
       const content = contentFormatters.formatImage(resource.blob, resource.mimeType);
       return formatCallToolSuccess(content);
     } catch (error) {
+      return formatCallToolError(error);
+    }
+  }
+
+  /**
+   * Upload a file to Alibaba Cloud OSS
+   * Required environment variables:
+   * - OSS_ACCESS_KEY_ID: Access Key ID
+   * - OSS_ACCESS_KEY_SECRET: Access Key Secret
+   * - OSS_BUCKET: Bucket name
+   * - OSS_REGION: Region (e.g., oss-cn-hangzhou)
+   * Optional:
+   * - OSS_ENDPOINT: Custom endpoint (defaults to https://{region}.aliyuncs.com)
+   * - OSS_PREFIX: Prefix for object key (defaults to 'temp')
+   *
+   * @param mountName Mount point name
+   * @param filePath Relative path to file within mount point
+   * @param ossKey Optional OSS object key (defaults to filename)
+   * @returns Upload result with URL or error
+   */
+  async uploadFileOss(mountName: string, filePath: string, ossKey?: string) {
+    if (!this.pyodide) {
+      return formatCallToolError("Pyodide not initialized");
+    }
+
+    const mountConfig = this.mountPoints.get(mountName);
+    if (!mountConfig) {
+      return formatCallToolError(`Mount point not found: ${mountName}`);
+    }
+
+    // Read OSS configuration from environment variables
+    const accessKeyId = process.env.OSS_ACCESS_KEY_ID;
+    const accessKeySecret = process.env.OSS_ACCESS_KEY_SECRET;
+    const ossPrefix = process.env.OSS_PREFIX;
+    const bucket = process.env.OSS_BUCKET;
+    const region = process.env.OSS_REGION;
+    const endpoint = process.env.OSS_ENDPOINT;
+
+    // Validate required environment variables
+    const missingVars: string[] = [];
+    if (!accessKeyId) missingVars.push("OSS_ACCESS_KEY_ID");
+    if (!accessKeySecret) missingVars.push("OSS_ACCESS_KEY_SECRET");
+    if (!bucket) missingVars.push("OSS_BUCKET");
+    if (!ossPrefix) missingVars.push("OSS_PREFIX");
+    if (!region && !endpoint) missingVars.push("OSS_REGION or OSS_ENDPOINT");
+
+    if (missingVars.length > 0) {
+      return formatCallToolError(
+        `Missing required environment variables: ${missingVars.join(", ")}`,
+      );
+    }
+
+    try {
+      // Dynamically import ali-oss
+      const OSS = (await import("ali-oss")).default;
+
+      // Build OSS client configuration
+      const ossConfig: any = {
+        accessKeyId: accessKeyId!,
+        accessKeySecret: accessKeySecret!,
+        bucket: bucket!,
+      };
+
+      if (endpoint) {
+        ossConfig.endpoint = endpoint;
+      } else {
+        ossConfig.region = region!;
+      }
+
+      const client = new OSS(ossConfig);
+
+      // Get full path to the file
+      const fullPath = path.join(mountConfig.hostPath, filePath);
+      if (!fs.existsSync(fullPath)) {
+        return formatCallToolError(`File not found: ${fullPath}`);
+      }
+
+      // Determine OSS object key within temp/ directory
+      const baseObjectKey = ossKey ?? path.basename(filePath);
+      const normalizedObjectKey = baseObjectKey.replace(/^\/+/, "");
+      const objectKey = path.posix.join(ossPrefix || "temp", normalizedObjectKey);
+
+      // Upload file
+      const result = await client.put(objectKey, fullPath);
+
+      // Generate pre-signed URL for private bucket access (1 hour expiry)
+      const expiresSeconds = 3600;
+      const signedUrl = client.signatureUrl(objectKey, { expires: expiresSeconds });
+
+      return formatCallToolSuccess(
+        JSON.stringify(
+          {
+            success: true,
+            name: result.name,
+            signedUrl,
+            expiresIn: expiresSeconds,
+          },
+          null,
+          2,
+        ),
+      );
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("Cannot find package")) {
+        return formatCallToolError(
+          "ali-oss package not installed. Please run: npm install ali-oss",
+        );
+      }
       return formatCallToolError(error);
     }
   }

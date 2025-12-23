@@ -90,6 +90,12 @@ mcp-pyodide/
 - `PYODIDE_DATA_DIR`: マウントするデータ用ディレクトリ (デフォルト: "./data")
 - `MCP_PORT`: HTTPサーバー（SSE / Streamable HTTP）のポート (デフォルト: 3020)
 - `PORT`: `MCP_PORT` のエイリアス (デフォルト: 3020)
+- `OSS_ACCESS_KEY_ID`: Alibaba Cloud OSS の Access Key ID（アップロードツール必須）
+- `OSS_ACCESS_KEY_SECRET`: Alibaba Cloud OSS の Access Key Secret（アップロードツール必須）
+- `OSS_BUCKET`: OSS バケット名（アップロードツール必須）
+- `OSS_PREFIX`: OSS オブジェクトキーのプレフィックス（アップロードツール必須。デフォルトは `temp/`）
+- `OSS_REGION`: OSS リージョン。例: `oss-cn-hangzhou`（`OSS_ENDPOINT` の代わりに指定可能）
+- `OSS_ENDPOINT`: カスタム OSS エンドポイント（任意。設定した場合は `OSS_REGION` を省略可能）
 
 ## 開発
 

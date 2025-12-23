@@ -631,6 +631,7 @@ list_directory("${mountConfig.mountPoint}")
    * - OSS_REGION: Region (e.g., oss-cn-hangzhou)
    * Optional:
    * - OSS_ENDPOINT: Custom endpoint (defaults to https://{region}.aliyuncs.com)
+   * - OSS_PREFIX: Prefix for object key (defaults to 'temp')
    *
    * @param mountName Mount point name
    * @param filePath Relative path to file within mount point
@@ -650,6 +651,7 @@ list_directory("${mountConfig.mountPoint}")
     // Read OSS configuration from environment variables
     const accessKeyId = process.env.OSS_ACCESS_KEY_ID;
     const accessKeySecret = process.env.OSS_ACCESS_KEY_SECRET;
+    const ossPrefix = process.env.OSS_PREFIX;
     const bucket = process.env.OSS_BUCKET;
     const region = process.env.OSS_REGION;
     const endpoint = process.env.OSS_ENDPOINT;
@@ -659,6 +661,7 @@ list_directory("${mountConfig.mountPoint}")
     if (!accessKeyId) missingVars.push("OSS_ACCESS_KEY_ID");
     if (!accessKeySecret) missingVars.push("OSS_ACCESS_KEY_SECRET");
     if (!bucket) missingVars.push("OSS_BUCKET");
+    if (!ossPrefix) missingVars.push("OSS_PREFIX");
     if (!region && !endpoint) missingVars.push("OSS_REGION or OSS_ENDPOINT");
 
     if (missingVars.length > 0) {
@@ -695,7 +698,7 @@ list_directory("${mountConfig.mountPoint}")
       // Determine OSS object key within temp/ directory
       const baseObjectKey = ossKey ?? path.basename(filePath);
       const normalizedObjectKey = baseObjectKey.replace(/^\/+/, "");
-      const objectKey = path.posix.join("temp", normalizedObjectKey);
+      const objectKey = path.posix.join(ossPrefix || "temp", normalizedObjectKey);
 
       // Upload file
       const result = await client.put(objectKey, fullPath);

@@ -145,6 +145,7 @@ npm run build
 - `OSS_ACCESS_KEY_ID`: 阿里云 OSS 的 Access Key ID（上传工具必需）
 - `OSS_ACCESS_KEY_SECRET`: 阿里云 OSS 的 Access Key Secret（上传工具必需）
 - `OSS_BUCKET`: OSS Bucket 名称（上传工具必需）
+- `OSS_PREFIX`: OSS 对象键前缀（上传工具必需，默认用于 `temp/` 目录）
 - `OSS_REGION`: OSS 区域，例如 `oss-cn-hangzhou`（与 `OSS_ENDPOINT` 至少需提供其一）
 - `OSS_ENDPOINT`: 自定义 OSS Endpoint（可选；提供后可不设置 `OSS_REGION`）
 

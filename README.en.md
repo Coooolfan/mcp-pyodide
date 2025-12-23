@@ -136,6 +136,7 @@ npm run build
 - `OSS_ACCESS_KEY_ID`: Access Key ID for Alibaba Cloud OSS (required for upload tool)
 - `OSS_ACCESS_KEY_SECRET`: Access Key Secret for Alibaba Cloud OSS (required for upload tool)
 - `OSS_BUCKET`: OSS bucket name (required for upload tool)
+- `OSS_PREFIX`: Prefix for object key (required for upload tool; defaults to `temp/`)
 - `OSS_REGION`: OSS region, e.g., `oss-cn-hangzhou` (provide this or `OSS_ENDPOINT`)
 - `OSS_ENDPOINT`: Custom OSS endpoint (optional; if provided, `OSS_REGION` is not needed)
 

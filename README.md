@@ -142,6 +142,11 @@ npm run build
 - `PYODIDE_DATA_DIR`: 挂载的数据目录（默认："./data"）
 - `MCP_PORT`: HTTP 服务端口（SSE / Streamable HTTP）（默认：3020）
 - `PORT`: `MCP_PORT` 的别名（默认：3020）
+- `OSS_ACCESS_KEY_ID`: 阿里云 OSS 的 Access Key ID（上传工具必需）
+- `OSS_ACCESS_KEY_SECRET`: 阿里云 OSS 的 Access Key Secret（上传工具必需）
+- `OSS_BUCKET`: OSS Bucket 名称（上传工具必需）
+- `OSS_REGION`: OSS 区域，例如 `oss-cn-hangzhou`（与 `OSS_ENDPOINT` 至少需提供其一）
+- `OSS_ENDPOINT`: 自定义 OSS Endpoint（可选；提供后可不设置 `OSS_REGION`）
 
 ## 许可证
 

@@ -133,6 +133,11 @@ npm run build
 - `PYODIDE_DATA_DIR`: Directory for mounted data (default: "./data")
 - `MCP_PORT`: Port for HTTP server (SSE / Streamable HTTP) (default: 3020)
 - `PORT`: Alias for `MCP_PORT` (default: 3020)
+- `OSS_ACCESS_KEY_ID`: Access Key ID for Alibaba Cloud OSS (required for upload tool)
+- `OSS_ACCESS_KEY_SECRET`: Access Key Secret for Alibaba Cloud OSS (required for upload tool)
+- `OSS_BUCKET`: OSS bucket name (required for upload tool)
+- `OSS_REGION`: OSS region, e.g., `oss-cn-hangzhou` (provide this or `OSS_ENDPOINT`)
+- `OSS_ENDPOINT`: Custom OSS endpoint (optional; if provided, `OSS_REGION` is not needed)
 
 ## License
 

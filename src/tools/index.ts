@@ -48,7 +48,8 @@ export const GET_MOUNT_POINTS_TOOL: Tool = {
 
 export const UPLOAD_FILE_OSS_TOOL: Tool = {
   name: "pyodide_upload-file-oss",
-  description: "Upload a file to OSS, return a URL. user can use this URL to download the file.",
+  description:
+    "Upload a file to OSS, return a signed URL. user can use this signed URL to download the file directly. The file must be in the mounted directory.",
   inputSchema: {
     type: "object",
     properties: {

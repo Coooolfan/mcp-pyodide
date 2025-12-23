@@ -2,8 +2,40 @@ import { Tool } from "@modelcontextprotocol/sdk/types.js";
 
 export const EXECUTE_PYTHON_TOOL: Tool = {
   name: "pyodide_execute",
-  description:
-    "Execute Python code using Pyodide with output capture. Mounted point maye empty, use network libs to download user provided files, user can not directly access files in mounted point, use upload-oss tools to upload files to OSS.\n\nNetworking notes (Pyodide):\n- `import pyodide` does not auto-import submodules; use `from pyodide.http import pyfetch` (or `import pyodide.http`) before calling HTTP helpers.\n- Prefer running async code in an async context: top-level `await` works when executed via `runPythonAsync` (e.g., `response = await pyfetch(url)`).\n- Avoid `asyncio.run(...)` / `loop.run_until_complete(...)` in this environment; it may fail with `WebAssembly stack switching not supported in this JavaScript runtime`. Use `await your_async_func()` instead.",
+  description: `Executes Python code using Pyodide with output capture.
+
+**File System & Networking:**
+- The mount point is restricted and may be empty.
+- Input: Use network libraries to download user-provided files.
+- Output: Users cannot directly access local files; use the \`upload-oss\` tool to persist files to OSS.
+
+**Pyodide Coding Guidelines:**
+1. Imports: Submodules are not auto-imported. You must use \`from pyodide.http import pyfetch\` explicitly.
+2. Async Execution: Top-level \`await\` is supported and preferred.
+eg.
+\`\`\`python
+from pyodide.http import pyfetch  
+response = await pyfetch("https://httpbin.org/get")  
+data = await response.string()  
+data
+\`\`\`
+
+**Example usage:**
+1. download user provided files from OSS
+\`\`\`python
+import os
+from pyodide.http import pyfetch
+file_path = "/mnt/data/data.json" # fetch from pyodide_get-mount-points
+response = await pyfetch("https://httpbin.org/get")
+content = await response.bytes() 
+with open(file_path, "wb") as f:
+    f.write(content)
+\`\`\`
+2. do something with the file and create a new file
+3. use pyodide_upload-file-oss to upload the new file to OSS
+4. return the signed URL to user as image or download link in markdown format
+`,
+
   inputSchema: {
     type: "object",
     properties: {
@@ -55,14 +87,14 @@ export const UPLOAD_FILE_OSS_TOOL: Tool = {
     properties: {
       mountName: {
         type: "string",
-        description: "Name of the mount point, fetch from pyodide_get-mount-points, e.g., 'mnt'",
+        description: "Name of the mount point, fetch from pyodide_get-mount-points, e.g., 'data'",
       },
-      imagePath: {
+      filePath: {
         type: "string",
-        description: "Path of the image file, relative to the mount point, e.g., 'image.png'",
+        description: "Path of the file, relative to the mount point, e.g., 'image.png'",
       },
     },
-    required: ["mountName", "imagePath"],
+    required: ["mountName", "filePath"],
   },
 };
 

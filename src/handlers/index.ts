@@ -44,7 +44,7 @@ const isReadMediaArgs = type({
 
 const isUploadFileOssArgs = type({
   mountName: "string",
-  imagePath: "string",
+  filePath: "string",
 });
 
 function setupServerHandlers(server: Server) {
@@ -116,8 +116,8 @@ function setupServerHandlers(server: Server) {
           if(uploadFileOssArgs instanceof type.errors){
             throw uploadFileOssArgs
           }
-          const {mountName, imagePath} = uploadFileOssArgs
-          return await pyodideManager.uploadFileOss(mountName, imagePath)
+          const { mountName, filePath } = uploadFileOssArgs;
+          return await pyodideManager.uploadFileOss(mountName, filePath);
         }
         default: {
           return formatCallToolError(`Unknown tool: ${name}`);

@@ -20,7 +20,6 @@ const TOOLS: Tool[] = [
   tools.EXECUTE_PYTHON_TOOL,
   tools.INSTALL_PYTHON_PACKAGES_TOOL,
   tools.GET_MOUNT_POINTS_TOOL,
-  // tools.LIST_MOUNTED_DIRECTORY_TOOL,
   tools.READ_MEDIA_TOOL,
 ];
 
@@ -64,6 +63,13 @@ function setupServerHandlers(server: Server) {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
       const { name, arguments: args } = request.params;
+      const userId = (request.params._meta?.headers as Record<string, any>)?.["user-id"];
+
+      console.log("call tool: \n", name, "\nargs: \n", args, "\nuserId: \n", userId);
+
+      if (userId == null || !/^\d+$/.test(userId)) {
+        throw new Error("Invalid or missing user ID");
+      }
 
       if (!args) {
         throw new Error("No arguments provided");
@@ -78,8 +84,7 @@ function setupServerHandlers(server: Server) {
             throw executePythonArgs;
           }
           const { code, timeout = 5000 } = executePythonArgs;
-          const results = await pyodideManager.executePython(code, timeout);
-          return results;
+          return await pyodideManager.executePython(code, timeout);
         }
         case "pyodide_install-packages": {
           const installPythonPackagesArgs = isInstallPythonPackagesArgs(args);
@@ -87,22 +92,11 @@ function setupServerHandlers(server: Server) {
             throw installPythonPackagesArgs;
           }
           const { package: packageName } = installPythonPackagesArgs;
-          const results = await pyodideManager.installPackage(packageName);
-          return results;
+          return await pyodideManager.installPackage(packageName);
         }
         case "pyodide_get-mount-points": {
-          const results = await pyodideManager.getMountPoints();
-          return results;
+          return await pyodideManager.getMountPoints();
         }
-        // case "pyodide_list-mounted-directory": {
-        //   const listMountedDirectoryArgs = isListMountedDirectoryArgs(args);
-        //   if (listMountedDirectoryArgs instanceof type.errors) {
-        //     throw listMountedDirectoryArgs;
-        //   }
-        //   const { mountName } = listMountedDirectoryArgs;
-        //   const results = await pyodideManager.listMountedDirectory(mountName);
-        //   return results;
-        // }
         case "pyodide_read-media": {
           const readImageArgs = isReadImageArgs(args);
           if (readImageArgs instanceof type.errors) {

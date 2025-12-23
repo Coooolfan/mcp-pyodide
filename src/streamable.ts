@@ -30,7 +30,7 @@ export async function runStreamableServer(createServer: () => Server) {
     cors({
       origin: "*",
       methods: ["GET", "POST", "DELETE"],
-      allowedHeaders: ["Content-Type", "mcp-session-id", "last-event-id"],
+      allowedHeaders: ["Content-Type", "mcp-session-id", "last-event-id", "user-id"],
       exposedHeaders: ["mcp-session-id"],
     }),
   );
@@ -40,6 +40,13 @@ export async function runStreamableServer(createServer: () => Server) {
   app.post("/mcp", async (req, res) => {
     try {
       const sessionId = req.headers["mcp-session-id"] as string | undefined;
+      const userId = req.headers["user-id"] as string | undefined;
+
+      if (userId == null || !/^\d+$/.test(userId)) {
+        res.status(400).send("Bad Request: user ID is empty or invalid");
+        return;
+      }
+
       if (sessionId) {
         const entry = transports[sessionId];
         if (!entry) {

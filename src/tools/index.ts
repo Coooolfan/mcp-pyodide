@@ -3,7 +3,7 @@ import { Tool } from "@modelcontextprotocol/sdk/types.js";
 export const EXECUTE_PYTHON_TOOL: Tool = {
   name: "pyodide_execute",
   description:
-    "Execute Python code using Pyodide with output capture. When generating images, they will be automatically saved to the output directory instead of being displayed. Images can be accessed from the saved file paths that will be included in the output.\n\nNetworking notes (Pyodide):\n- `import pyodide` does not auto-import submodules; use `from pyodide.http import pyfetch` (or `import pyodide.http`) before calling HTTP helpers.\n- Prefer running async code in an async context: top-level `await` works when executed via `runPythonAsync` (e.g., `response = await pyfetch(url)`).\n- Avoid `asyncio.run(...)` / `loop.run_until_complete(...)` in this environment; it may fail with `WebAssembly stack switching not supported in this JavaScript runtime`. Use `await your_async_func()` instead.",
+    "Execute Python code using Pyodide with output capture. Mounted point maye empty, use network libs to download user provided files, user can not directly access files in mounted point, use upload-oss tools to upload files to OSS.\n\nNetworking notes (Pyodide):\n- `import pyodide` does not auto-import submodules; use `from pyodide.http import pyfetch` (or `import pyodide.http`) before calling HTTP helpers.\n- Prefer running async code in an async context: top-level `await` works when executed via `runPythonAsync` (e.g., `response = await pyfetch(url)`).\n- Avoid `asyncio.run(...)` / `loop.run_until_complete(...)` in this environment; it may fail with `WebAssembly stack switching not supported in this JavaScript runtime`. Use `await your_async_func()` instead.",
   inputSchema: {
     type: "object",
     properties: {
@@ -45,21 +45,6 @@ export const GET_MOUNT_POINTS_TOOL: Tool = {
     properties: {},
   },
 };
-
-// export const LIST_MOUNTED_DIRECTORY_TOOL: Tool = {
-//   name: "pyodide_list-mounted-directory",
-//   description: "List contents of a mounted directory",
-//   inputSchema: {
-//     type: "object",
-//     properties: {
-//       mountName: {
-//         type: "string",
-//         description: "Name of the mount point",
-//       },
-//     },
-//     required: ["mountName"],
-//   },
-// };
 
 export const READ_MEDIA_TOOL: Tool = {
   name: "pyodide_read-media",
